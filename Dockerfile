@@ -1,17 +1,9 @@
 FROM python:3.11-slim-bookworm
 
-# Install system dependencies for C++ compilation (dlib) and graphics libraries (OpenCV)
+# Install runtime system dependencies for OpenCV/graphics support
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    cmake \
-    g++ \
-    libatlas-base-dev \
-    libjpeg-dev \
-    liblapack-dev \
-    libswscale-dev \
     libsm6 \
     libxext6 \
-    libxrender-dev \
     libgl1-mesa-glx \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
@@ -25,6 +17,9 @@ COPY requirements.txt .
 # Install python requirements & gunicorn for production web server
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --no-cache-dir gunicorn
+
+# Install face-recognition without dependencies to bypass compilation
+RUN pip install --no-cache-dir face-recognition --no-deps
 
 # Copy project files
 COPY . .
