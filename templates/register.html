@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    <div class="col-lg-5">
+        <div class="glass-card p-4 h-100">
+            <h4 class="fw-bold mb-4 brand-font text-dark"><i class="fa-solid fa-id-card me-2 text-success"></i>Employee Details</h4>
+            
+            <form id="registrationForm">
+                <div class="mb-3">
+                    <label for="employee_id" class="form-label fw-semibold">Employee ID</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary"><i class="fa-solid fa-hashtag"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="employee_id" placeholder="e.g. EMP1024" required>
+                    </div>
+                    <div class="form-text">Must be a unique identifier.</div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="name" class="form-label fw-semibold">Full Name</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary"><i class="fa-solid fa-user"></i></span>
+                        <input type="text" class="form-control border-start-0 ps-0" id="name" placeholder="John Doe" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="department" class="form-label fw-semibold">Department</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary"><i class="fa-solid fa-building-user"></i></span>
+                        <select class="form-select border-start-0 ps-0" id="department" required>
+                            <option value="" disabled selected>Select Department</option>
+                            <option value="HR">Human Resources</option>
+                            <option value="Engineering">Engineering</option>
+                            <option value="Sales">Sales & Marketing</option>
+                            <option value="Operations">Operations</option>
+                            <option value="Finance">Finance</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="email" class="form-label fw-semibold">Email Address</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary"><i class="fa-solid fa-envelope"></i></span>
+                        <input type="email" class="form-control border-start-0 ps-0" id="email" placeholder="john.doe@company.com" required>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label for="phone" class="form-label fw-semibold">Phone Number</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-transparent border-end-0 text-secondary"><i class="fa-solid fa-phone"></i></span>
+                        <input type="tel" class="form-control border-start-0 ps-0" id="phone" placeholder="+1 (555) 019-2834" required>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button type="submit" class="btn btn-success py-2" id="submitBtn" disabled>
+                        <i class="fa-solid fa-user-check me-2"></i>Complete Registration
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="glass-card p-4 h-100 text-center d-flex flex-column justify-content-between">
+            <div>
+                <h4 class="fw-bold mb-2 brand-font text-dark"><i class="fa-solid fa-camera-webme me-2 text-primary"></i>Biometric Scanner</h4>
+                <p class="text-secondary mb-4">Please look at the camera. Ensure your face is centered and clearly lit.</p>
+            </div>
+
+            <!-- Webcam Frame Viewport -->
+            <div class="webcam-container mb-4" id="scannerViewport">
+                <video id="webcamVideo" class="webcam-video" autoplay playsinline></video>
+                <canvas id="webcamCanvas" class="webcam-canvas"></canvas>
+                
+                <!-- Guidelines overlay -->
+                <div class="scanner-overlay" id="scannerOverlay">
+                    <div class="scanner-line"></div>
+                    <div class="corner-guide guide-tl"></div>
+                    <div class="corner-guide guide-tr"></div>
+                    <div class="corner-guide guide-bl"></div>
+                    <div class="corner-guide guide-br"></div>
+                </div>
+                
+                <!-- Display Image Capture State -->
+                <img id="capturePreview" class="webcam-video d-none" alt="Captured Frame">
+            </div>
+
+            <!-- Action Controls -->
+            <div class="d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-primary" id="captureBtn">
+                    <i class="fa-solid fa-camera me-2"></i>Capture Photo
+                </button>
+                <button type="button" class="btn btn-outline-secondary d-none" id="resetCaptureBtn">
+                    <i class="fa-solid fa-arrows-rotate me-2"></i>Retake Photo
+                </button>
+            </div>
+            
+            <!-- Alert Display -->
+            <div class="alert alert-info mt-4 mb-0 text-start d-flex align-items-center gap-3" id="webcamAlert">
+                <i class="fa-solid fa-info-circle fs-4 text-info flex-shrink-0"></i>
+                <span id="webcamAlertText">Start the camera. Register details on the left, then capture your face.</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/register.js') }}"></script>
+{% endblock %}

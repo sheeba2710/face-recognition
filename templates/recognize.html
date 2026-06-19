@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row g-4 justify-content-center">
+    
+    <!-- Left Column: Face Recognition Webcam Terminal -->
+    <div class="col-lg-7">
+        <div class="glass-card p-4 h-100 text-center d-flex flex-column justify-content-between">
+            <div>
+                <h4 class="fw-bold mb-2 brand-font text-dark"><i class="fa-solid fa-expand me-2 text-success"></i>Attendance Scanner</h4>
+                <p class="text-secondary mb-4">Biometric attendance will be marked automatically upon high-confidence recognition.</p>
+            </div>
+
+            <!-- Webcam Viewport with Box overlay -->
+            <div class="webcam-container mb-4" id="recognizerViewport">
+                <video id="recognizeVideo" class="webcam-video" autoplay playsinline></video>
+                <canvas id="recognizeCanvas" class="webcam-canvas"></canvas>
+                
+                <!-- Scanning animation overlay -->
+                <div class="scanner-overlay" id="recognizeScannerOverlay">
+                    <div class="scanner-line"></div>
+                    <div class="corner-guide guide-tl"></div>
+                    <div class="corner-guide guide-tr"></div>
+                    <div class="corner-guide guide-bl"></div>
+                    <div class="corner-guide guide-br"></div>
+                </div>
+            </div>
+
+            <!-- Terminal status controls -->
+            <div class="d-flex justify-content-center gap-3">
+                <button type="button" class="btn btn-outline-danger" id="stopTerminalBtn">
+                    <i class="fa-solid fa-power-off me-2"></i>Pause Terminal
+                </button>
+                <button type="button" class="btn btn-success d-none" id="startTerminalBtn">
+                    <i class="fa-solid fa-circle-play me-2"></i>Resume Terminal
+                </button>
+            </div>
+
+            <!-- Status Logs -->
+            <div class="alert alert-secondary mt-4 mb-0 text-start d-flex align-items-center gap-3" id="recognizeAlert">
+                <i class="fa-solid fa-satellite-dish fs-4 text-secondary flex-shrink-0 animate-pulse"></i>
+                <span id="recognizeAlertText">Initializing terminal... Fetching camera access.</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Employee Information Panel -->
+    <div class="col-lg-5">
+        <div class="glass-card p-4 h-100 d-flex flex-column justify-content-between" id="infoPanelCard">
+            <div>
+                <h4 class="fw-bold mb-4 brand-font text-dark text-center text-lg-start"><i class="fa-solid fa-address-card me-2 text-primary"></i>Employee Panel</h4>
+                
+                <!-- Placeholder when no face is active -->
+                <div id="panelPlaceholder" class="text-center py-5 my-4 text-secondary">
+                    <i class="fa-solid fa-user-gear fs-1 d-block mb-3 animate-bounce"></i>
+                    <h5>Awaiting Recognition</h5>
+                    <p class="px-4">Stand directly in front of the camera. The system will look up your registration and log today's attendance.</p>
+                </div>
+
+                <!-- Hydrated employee profile cards -->
+                <div id="panelDetails" class="d-none text-center text-lg-start">
+                    <div class="text-center mb-4">
+                        <img id="infoPhoto" src="" class="info-panel-img mb-3" alt="Employee Photo">
+                        <h4 id="infoName" class="fw-bold mb-1">Jane Doe</h4>
+                        <span id="infoDept" class="badge-dept">Engineering</span>
+                    </div>
+
+                    <div class="border-top border-light pt-4">
+                        <table class="table table-borderless align-middle mb-0 text-start">
+                            <tbody>
+                                <tr>
+                                    <td class="text-secondary ps-0 py-2" style="width: 120px;"><i class="fa-solid fa-hashtag me-2 text-primary"></i>ID</td>
+                                    <td id="infoId" class="fw-semibold text-dark">EMP102</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-secondary ps-0 py-2"><i class="fa-solid fa-envelope me-2 text-primary"></i>Email</td>
+                                    <td id="infoEmail" class="text-dark">jane.doe@company.com</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-secondary ps-0 py-2"><i class="fa-solid fa-phone me-2 text-primary"></i>Phone</td>
+                                    <td id="infoPhone" class="text-dark">+1 (555) 019-2834</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-secondary ps-0 py-2"><i class="fa-regular fa-calendar-check me-2 text-primary"></i>Joined</td>
+                                    <td id="infoJoined" class="text-dark">2026-06-19</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance marking success indicator -->
+            <div id="attendanceSuccessIndicator" class="alert alert-success d-none mt-4 mb-0 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-square-check fs-4"></i>
+                <div>
+                    <strong class="d-block">Attendance Registered</strong>
+                    <span id="attendanceSuccessTime" class="fs-7">Logged today at 10:45 AM</span>
+                </div>
+            </div>
+            
+            <div id="attendanceAlreadyIndicator" class="alert alert-info d-none mt-4 mb-0 d-flex align-items-center gap-2">
+                <i class="fa-solid fa-circle-check fs-4"></i>
+                <div>
+                    <strong class="d-block">Verified Present</strong>
+                    <span class="fs-7">Attendance was already registered for today.</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/recognize.js') }}"></script>
+{% endblock %}

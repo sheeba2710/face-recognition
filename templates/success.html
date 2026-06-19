@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-6">
+        <div class="glass-card p-5 text-center">
+            
+            <!-- Success animation icon -->
+            <div class="success-checkmark mb-4">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            
+            <h2 class="fw-bold mb-1 text-success">Registration Successful!</h2>
+            <p class="text-secondary mb-5">Biometric employee enrollment has been fully processed and saved.</p>
+            
+            <!-- Employee Card Grid -->
+            <div class="row g-4 align-items-center text-start border-top border-bottom border-light py-4 mb-5">
+                <div class="col-md-5 text-center mb-3 mb-md-0">
+                    <img src="{{ url_for('static', filename='uploads/' + employee.employee_id + '.jpg') }}" 
+                         class="img-fluid rounded-4 shadow-sm border border-light" 
+                         style="max-height: 180px; object-fit: cover; aspect-ratio: 1/1;" 
+                         alt="{{ employee.name }}"
+                         onerror="this.src='https://via.placeholder.com/180'">
+                </div>
+                <div class="col-md-7 ps-md-4">
+                    <div class="mb-2">
+                        <span class="text-secondary d-block fs-7">Employee ID</span>
+                        <strong class="fs-5 text-dark">{{ employee.employee_id }}</strong>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-secondary d-block fs-7">Full Name</span>
+                        <strong class="fs-5 text-dark">{{ employee.name }}</strong>
+                    </div>
+                    <div class="mb-2">
+                        <span class="text-secondary d-block fs-7">Department</span>
+                        <span class="badge-dept d-inline-block">{{ employee.department }}</span>
+                    </div>
+                    <div>
+                        <span class="text-secondary d-block fs-7">Enrolled On</span>
+                        <span class="text-dark"><i class="fa-regular fa-calendar-check me-1"></i>{{ employee.registration_date }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Buttons -->
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ url_for('dashboard') }}" class="btn btn-primary px-4">
+                    <i class="fa-solid fa-gauge-high me-2"></i>Go to Dashboard
+                </a>
+                <a href="{{ url_for('register') }}" class="btn btn-outline-success px-4">
+                    <i class="fa-solid fa-user-plus me-2"></i>Register Another
+                </a>
+            </div>
+            
+        </div>
+    </div>
+</div>
+{% endblock %}
