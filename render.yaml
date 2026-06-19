@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: face-recognition-system
+    env: docker
+    plan: starter
+    envVars:
+      - key: DATABASE_PATH
+        value: /app/data/database.db
+    disk:
+      name: face-recognition-data
+      mountPath: /app/data
+      sizeGB: 1

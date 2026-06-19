@@ -1,7 +1,7 @@
 import os
 import sys
 # pyrefly: ignore [missing-import]
-from flask import Flask, render_template, request, jsonify, redirect, url_for, Response
+from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, send_from_directory
 
 # Ensure project root is in python path
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
@@ -17,7 +17,11 @@ from face_recognition.register_face import process_and_register_face, base64_to_
 from face_recognition.recognize_face import recognize_faces_in_frame
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
+# Configure upload folder (use persistent volume directory if on Render/production)
+if os.environ.get('RENDER') or os.path.exists('/app/data'):
+    app.config['UPLOAD_FOLDER'] = '/app/data/uploads'
+else:
+    app.config['UPLOAD_FOLDER'] = os.path.join(app.root_path, 'static', 'uploads')
 app.secret_key = 'secret_face_recognition_management_key'
 
 # In-memory face encodings cache to speed up real-time recognition frame analysis
@@ -81,6 +85,12 @@ def recognize():
     """Render Attendance & Recognition page."""
     return render_template('recognize.html')
 
+# --- Custom Static Route for Uploads (needed when stored outside of static folder in production) ---
+@app.route('/static/uploads/<filename>')
+def serve_upload(filename):
+    """Serve uploaded images from the appropriate folder (persistent in prod, local in dev)."""
+    return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
 
 # --- REST API Endpoints ---
 
@@ -127,7 +137,7 @@ def api_register():
     
     if not db_success:
         # Cleanup saved file if database save fails
-        local_path = os.path.join(app.root_path, web_image_path)
+        local_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{employee_id}.jpg")
         if os.path.exists(local_path):
             os.remove(local_path)
         return jsonify({"success": False, "error": "Database error registering employee details."}), 500
@@ -137,7 +147,7 @@ def api_register():
     if not encoding_success:
         # Cascade will handle employee removal or delete manually
         delete_employee(employee_id)
-        local_path = os.path.join(app.root_path, web_image_path)
+        local_path = os.path.join(app.config['UPLOAD_FOLDER'], f"{employee_id}.jpg")
         if os.path.exists(local_path):
             os.remove(local_path)
         return jsonify({"success": False, "error": "Database error saving face encoding."}), 500
@@ -251,7 +261,8 @@ def api_employee_delete(employee_id):
         
     # Delete image file from system
     image_path = employee["image_path"]
-    local_path = os.path.join(app.root_path, image_path)
+    filename = os.path.basename(image_path)
+    local_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
     if os.path.exists(local_path):
         try:
             os.remove(local_path)

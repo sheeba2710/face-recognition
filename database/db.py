@@ -1,7 +1,13 @@
 import os
 import sqlite3
 
-DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'database.db')
+# Determine database path (use persistent disk path if on Render/production)
+DB_PATH = os.environ.get('DATABASE_PATH')
+if not DB_PATH:
+    if os.environ.get('RENDER') or os.path.exists('/app/data'):
+        DB_PATH = '/app/data/database.db'
+    else:
+        DB_PATH = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'database.db')
 
 def get_db_connection():
     """Establish a connection to the SQLite database, enabling foreign keys."""
