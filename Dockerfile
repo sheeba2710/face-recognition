@@ -32,5 +32,5 @@ COPY . .
 # Expose port
 EXPOSE 5000
 
-# Start with Gunicorn WSGI server
-CMD ["gunicorn", "--bind", "0.0.0.0:5000", "app:app"]
+# Start with Gunicorn WSGI server, respecting PORT environment variable
+CMD ["sh", "-c", "gunicorn --bind 0.0.0.0:${PORT:-5000} app:app"]
