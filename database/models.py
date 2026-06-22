@@ -1,14 +1,18 @@
 import json
+from datetime import datetime, timezone, timedelta
 from database.db import get_db_connection
 
-def create_employee(employee_id, name, department, email, phone, image_path):
+def create_employee(employee_id, name, department, email, phone, image_path, registration_date=None):
     """Insert a new employee record into the database."""
+    if registration_date is None:
+        ist_tz = timezone(timedelta(hours=5, minutes=30))
+        registration_date = datetime.now(ist_tz).strftime("%Y-%m-%d %H:%M:%S")
     conn = get_db_connection()
     cursor = conn.cursor()
     try:
         cursor.execute(
-            "INSERT INTO employee (employee_id, name, department, email, phone, image_path) VALUES (?, ?, ?, ?, ?, ?)",
-            (employee_id, name, department, email, phone, image_path)
+            "INSERT INTO employee (employee_id, name, department, email, phone, image_path, registration_date) VALUES (?, ?, ?, ?, ?, ?, ?)",
+            (employee_id, name, department, email, phone, image_path, registration_date)
         )
         conn.commit()
         return True
@@ -137,7 +141,9 @@ def get_dashboard_stats():
     registered_faces = cursor.fetchone()[0]
     
     # 3. Today's Attendance
-    cursor.execute("SELECT COUNT(DISTINCT employee_id) FROM attendance WHERE date = date('now', 'localtime')")
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    today_ist = datetime.now(ist_tz).strftime("%Y-%m-%d")
+    cursor.execute("SELECT COUNT(DISTINCT employee_id) FROM attendance WHERE date = ?", (today_ist,))
     today_attendance = cursor.fetchone()[0]
     
     # 4. Recognition Accuracy (calculated metric or static high accuracy)

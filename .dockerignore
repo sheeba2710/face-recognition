@@ -1,0 +1,17 @@
+.git/
+.venv/
+.venv311/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+database.db
+static/uploads/*
+.vscode/
+.idea/
+Dockerfile
+render.yaml
+.gitignore
+.dockerignore

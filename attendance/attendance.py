@@ -1,6 +1,6 @@
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from database.db import get_db_connection
 
 def mark_attendance(employee_id):
@@ -8,8 +8,9 @@ def mark_attendance(employee_id):
     conn = get_db_connection()
     cursor = conn.cursor()
     
-    # Get current date and time
-    now = datetime.now()
+    # Get current date and time in IST (UTC+5:30)
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    now = datetime.now(ist_tz)
     current_date = now.strftime("%Y-%m-%d")
     current_time = now.strftime("%H:%M:%S")
     

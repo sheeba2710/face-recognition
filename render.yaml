@@ -6,6 +6,8 @@ services:
     envVars:
       - key: DATABASE_PATH
         value: /app/data/database.db
+      - key: TZ
+        value: Asia/Kolkata
     disk:
       name: face-recognition-data
       mountPath: /app/data
