@@ -27,7 +27,6 @@ from attendance.attendance import mark_attendance, get_attendance_logs, export_a
 from face_recognition.register_face import process_and_register_face, base64_to_cv2, detect_face_locations
 from face_recognition.recognize_face import recognize_faces_in_frame
 # pyrefly: ignore [missing-import]
-from object_detection.detect_objects import detect_objects
 app = Flask(__name__)
 # Configure upload folder (use persistent volume directory if on Render/production)
 if os.environ.get('RENDER') or os.path.exists('/app/data'):
