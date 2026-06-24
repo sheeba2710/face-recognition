@@ -1,3 +1,4 @@
+
 import os
 import sys
 import base64
@@ -35,7 +36,7 @@ def recognize_faces_in_frame(frame_data_uri, known_encodings_data):
     """
     img = base64_to_cv2(frame_data_uri)
     if img is None:
-        return []
+        return {"faces": [], "objects": []}
         
     # Resize frame to 1/4 size for faster face recognition processing
     small_img = cv2.resize(img, (0, 0), fx=0.25, fy=0.25)
@@ -99,9 +100,8 @@ def recognize_faces_in_frame(frame_data_uri, known_encodings_data):
             "confidence": round(confidence, 1)
         })
         
-    objects_found = detect_objects(img)
-
     return {
-    "faces": matches_found,
-    "objects": objects_found
-}
+        "faces": matches_found,
+        "objects": []
+    }
+

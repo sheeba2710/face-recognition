@@ -8,10 +8,8 @@ os.environ["NUMEXPR_NUM_THREADS"] = "1"
 
 import sys
 import gc
-# pyrefly: ignore [missing-import]
-import torch
-torch.set_num_threads(1)
 
+# pyrefly: ignore [missing-import]
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, send_from_directory
 
 # Ensure project root is in python path
