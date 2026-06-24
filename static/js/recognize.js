@@ -108,65 +108,98 @@ document.addEventListener('DOMContentLoaded', () => {
                 // Clear active bounding boxes canvas
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 
-                if (data.success && data.matches && data.matches.length > 0) {
-                    let primaryMatch = null;
-                    
-                    data.matches.forEach(match => {
-                        const box = match.box;
-                        const width = box.right - box.left;
-                        const height = box.bottom - box.top;
+                if (data.success) {
+                    // Draw Faces
+                    if (data.matches && data.matches.length > 0) {
+                        let primaryMatch = null;
                         
-                        // Select colors based on match success
-                        const isMatched = match.employee_id !== null;
-                        const boxColor = isMatched ? '#10b981' : '#f43f5e'; // Green vs Red/Rose
+                        data.matches.forEach(match => {
+                            const box = match.box;
+                            const width = box.right - box.left;
+                            const height = box.bottom - box.top;
+                            
+                            // Select colors based on match success
+                            const isMatched = match.employee_id !== null;
+                            const boxColor = isMatched ? '#10b981' : '#f43f5e'; // Green vs Red/Rose
+                            
+                            // 1. Draw box rectangle
+                            ctx.strokeStyle = boxColor;
+                            ctx.lineWidth = 3;
+                            ctx.strokeRect(box.left, box.top, width, height);
+                            
+                            // 2. Draw neat corner accents
+                            ctx.fillStyle = boxColor;
+                            ctx.fillRect(box.left - 2, box.top - 2, 12, 4);
+                            ctx.fillRect(box.left - 2, box.top - 2, 4, 12);
+                            ctx.fillRect(box.right - 10, box.top - 2, 12, 4);
+                            ctx.fillRect(box.right - 2, box.top - 2, 4, 12);
+                            ctx.fillRect(box.left - 2, box.bottom - 10, 4, 12);
+                            ctx.fillRect(box.left - 2, box.bottom - 2, 12, 4);
+                            ctx.fillRect(box.right - 2, box.bottom - 10, 4, 12);
+                            ctx.fillRect(box.right - 10, box.bottom - 2, 12, 4);
+                            
+                            // 3. Draw text label background
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.75)'; // Dark Slate semi-transparent
+                            ctx.fillRect(box.left - 2, box.top - 38, width + 4, 32);
+                            
+                            // 4. Write text (Mirrored label layout handled by mirrored canvas CSS)
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = 'bold 13px sans-serif';
+                            const labelText = isMatched ? `This is ${match.name}` : 'Unknown Profile';
+                            const confText = `Confidence: ${match.confidence}%`;
+                            
+                            // Canvas is mirrored, so text drawing requires mirroring matrix tricks or we can use normal alignment
+                            // Since CSS scaleX(-1) mirrors everything, normal text gets mirrored.
+                            // To write unmirrored text on a mirrored canvas:
+                            ctx.save();
+                            ctx.translate(box.left + width / 2, box.top - 22);
+                            ctx.scale(-1, 1); // unmirror the coordinate space just for text!
+                            ctx.textAlign = 'center';
+                            ctx.fillText(labelText, 0, -4);
+                            ctx.font = '11px sans-serif';
+                            ctx.fillStyle = isMatched ? '#34d399' : '#fb7185';
+                            ctx.fillText(confText, 0, 8);
+                            ctx.restore();
+                            
+                            // Record the highest confidence matching employee as the primary active display
+                            if (isMatched && (!primaryMatch || match.confidence > primaryMatch.confidence)) {
+                                primaryMatch = match;
+                            }
+                        });
                         
-                        // 1. Draw box rectangle
-                        ctx.strokeStyle = boxColor;
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(box.left, box.top, width, height);
-                        
-                        // 2. Draw neat corner accents
-                        ctx.fillStyle = boxColor;
-                        ctx.fillRect(box.left - 2, box.top - 2, 12, 4);
-                        ctx.fillRect(box.left - 2, box.top - 2, 4, 12);
-                        ctx.fillRect(box.right - 10, box.top - 2, 12, 4);
-                        ctx.fillRect(box.right - 2, box.top - 2, 4, 12);
-                        ctx.fillRect(box.left - 2, box.bottom - 10, 4, 12);
-                        ctx.fillRect(box.left - 2, box.bottom - 2, 12, 4);
-                        ctx.fillRect(box.right - 2, box.bottom - 10, 4, 12);
-                        ctx.fillRect(box.right - 10, box.bottom - 2, 12, 4);
-                        
-                        // 3. Draw text label background
-                        ctx.fillStyle = 'rgba(15, 23, 42, 0.75)'; // Dark Slate semi-transparent
-                        ctx.fillRect(box.left - 2, box.top - 38, width + 4, 32);
-                        
-                        // 4. Write text (Mirrored label layout handled by mirrored canvas CSS)
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 13px sans-serif';
-                        const labelText = isMatched ? `This is ${match.name}` : 'Unknown Profile';
-                        const confText = `Confidence: ${match.confidence}%`;
-                        
-                        // Canvas is mirrored, so text drawing requires mirroring matrix tricks or we can use normal alignment
-                        // Since CSS scaleX(-1) mirrors everything, normal text gets mirrored.
-                        // To write unmirrored text on a mirrored canvas:
-                        ctx.save();
-                        ctx.translate(box.left + width / 2, box.top - 22);
-                        ctx.scale(-1, 1); // unmirror the coordinate space just for text!
-                        ctx.textAlign = 'center';
-                        ctx.fillText(labelText, 0, -4);
-                        ctx.font = '11px sans-serif';
-                        ctx.fillStyle = isMatched ? '#34d399' : '#fb7185';
-                        ctx.fillText(confText, 0, 8);
-                        ctx.restore();
-                        
-                        // Record the highest confidence matching employee as the primary active display
-                        if (isMatched && (!primaryMatch || match.confidence > primaryMatch.confidence)) {
-                            primaryMatch = match;
+                        if (primaryMatch) {
+                            hydrateEmployeePanel(primaryMatch);
                         }
-                    });
-                    
-                    if (primaryMatch) {
-                        hydrateEmployeePanel(primaryMatch);
+                    }
+
+                    // Draw Objects
+                    if (data.objects && data.objects.length > 0) {
+                        data.objects.forEach(obj => {
+                            const box = obj.box;
+                            const width = box.right - box.left;
+                            const height = box.bottom - box.top;
+                            
+                            const boxColor = '#3b82f6'; // Modern Blue/Indigo for Objects
+                            
+                            // 1. Draw box rectangle
+                            ctx.strokeStyle = boxColor;
+                            ctx.lineWidth = 2;
+                            ctx.strokeRect(box.left, box.top, width, height);
+                            
+                            // 2. Draw text label background
+                            ctx.fillStyle = 'rgba(15, 23, 42, 0.75)';
+                            ctx.fillRect(box.left - 2, box.top - 28, width + 4, 24);
+                            
+                            // 3. Write text (unmirrored coordinate space for readability)
+                            ctx.save();
+                            ctx.translate(box.left + width / 2, box.top - 16);
+                            ctx.scale(-1, 1); // unmirror the coordinate space just for text!
+                            ctx.textAlign = 'center';
+                            ctx.fillStyle = '#ffffff';
+                            ctx.font = '11px sans-serif';
+                            ctx.fillText(`${obj.name} (${obj.confidence}%)`, 0, 4);
+                            ctx.restore();
+                        });
                     }
                 }
             } catch (err) {

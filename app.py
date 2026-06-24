@@ -15,7 +15,8 @@ from database.models import (
 from attendance.attendance import mark_attendance, get_attendance_logs, export_attendance_csv
 from face_recognition.register_face import process_and_register_face, base64_to_cv2, detect_face_locations
 from face_recognition.recognize_face import recognize_faces_in_frame
-
+# pyrefly: ignore [missing-import]
+from object_detection.detect_objects import detect_objects
 app = Flask(__name__)
 # Configure upload folder (use persistent volume directory if on Render/production)
 if os.environ.get('RENDER') or os.path.exists('/app/data'):
@@ -197,11 +198,13 @@ def api_recognize_frame():
         
     try:
         # Run recognition
-        matches = recognize_faces_in_frame(image_data, KNOWN_ENCODINGS_CACHE)
+        recognition_result = recognize_faces_in_frame(image_data, KNOWN_ENCODINGS_CACHE)
+        faces = recognition_result.get("faces", [])
+        objects = recognition_result.get("objects", [])
         
         # Hydrate matching entries with employee details and log attendance
         hydrated_matches = []
-        for match in matches:
+        for match in faces:
             employee_id = match["employee_id"]
             confidence = match["confidence"]
             box = match["box"]
@@ -228,7 +231,11 @@ def api_recognize_frame():
                 "attendance_marked": attendance_marked
             })
             
-        return jsonify({"success": True, "matches": hydrated_matches})
+        return jsonify({
+            "success": True,
+            "matches": hydrated_matches,
+            "objects": objects
+        })
     except Exception as e:
         print(f"Error during frame recognition: {e}")
         return jsonify({"success": False, "error": "Frame recognition failed."}), 500

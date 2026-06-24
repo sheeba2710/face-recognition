@@ -1,3 +1,4 @@
+from object_detection.detect_objects import detect_objects
 import os
 import sys
 import base64
@@ -99,4 +100,9 @@ def recognize_faces_in_frame(frame_data_uri, known_encodings_data):
             "confidence": round(confidence, 1)
         })
         
-    return matches_found
+    objects_found = detect_objects(img)
+
+    return {
+    "faces": matches_found,
+    "objects": objects_found
+}

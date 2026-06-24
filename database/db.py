@@ -59,6 +59,14 @@ def init_db():
     );
     """)
     
+    # 4. Insert default 'UNKNOWN' employee if not exists
+    cursor.execute("SELECT employee_id FROM employee WHERE employee_id = 'UNKNOWN'")
+    if not cursor.fetchone():
+        cursor.execute(
+            "INSERT INTO employee (employee_id, name, department, email, phone, image_path) VALUES (?, ?, ?, ?, ?, ?)",
+            ('UNKNOWN', 'Unknown Profile', 'N/A', 'N/A', 'N/A', 'static/uploads/UNKNOWN.jpg')
+        )
+    
     conn.commit()
     conn.close()
 

@@ -17,3 +17,6 @@ database.db
 # IDE settings
 .vscode/
 .idea/
+
+# YOLO Model weights
+*.pt

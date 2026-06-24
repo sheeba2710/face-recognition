@@ -38,11 +38,11 @@ def get_all_employees(search_query=None):
     if search_query:
         query = f"%{search_query}%"
         cursor.execute(
-            "SELECT * FROM employee WHERE name LIKE ? OR employee_id LIKE ? OR department LIKE ? ORDER BY registration_date DESC",
+            "SELECT * FROM employee WHERE employee_id != 'UNKNOWN' AND (name LIKE ? OR employee_id LIKE ? OR department LIKE ?) ORDER BY registration_date DESC",
             (query, query, query)
         )
     else:
-        cursor.execute("SELECT * FROM employee ORDER BY registration_date DESC")
+        cursor.execute("SELECT * FROM employee WHERE employee_id != 'UNKNOWN' ORDER BY registration_date DESC")
     rows = cursor.fetchall()
     conn.close()
     return [dict(row) for row in rows]
@@ -133,11 +133,11 @@ def get_dashboard_stats():
     cursor = conn.cursor()
     
     # 1. Total Employees
-    cursor.execute("SELECT COUNT(*) FROM employee")
+    cursor.execute("SELECT COUNT(*) FROM employee WHERE employee_id != 'UNKNOWN'")
     total_employees = cursor.fetchone()[0]
     
     # 2. Registered Faces (number of encodings stored)
-    cursor.execute("SELECT COUNT(*) FROM face_encoding")
+    cursor.execute("SELECT COUNT(*) FROM face_encoding WHERE employee_id != 'UNKNOWN'")
     registered_faces = cursor.fetchone()[0]
     
     # 3. Today's Attendance

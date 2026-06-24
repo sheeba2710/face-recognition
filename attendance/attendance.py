@@ -14,16 +14,34 @@ def mark_attendance(employee_id):
     current_date = now.strftime("%Y-%m-%d")
     current_time = now.strftime("%H:%M:%S")
     
-    # Check if attendance already logged for today
-    cursor.execute(
-        "SELECT id FROM attendance WHERE employee_id = ? AND date = ?",
-        (employee_id, current_date)
-    )
-    already_marked = cursor.fetchone()
-    
-    if already_marked:
-        conn.close()
-        return False
+    # For UNKNOWN (unrecognized), log with a 5-minute cooldown to prevent database flooding.
+    if employee_id == 'UNKNOWN':
+        cursor.execute(
+            "SELECT id, time FROM attendance WHERE employee_id = ? AND date = ? ORDER BY id DESC LIMIT 1",
+            (employee_id, current_date)
+        )
+        last_log = cursor.fetchone()
+        if last_log:
+            try:
+                last_time = datetime.strptime(last_log["time"], "%H:%M:%S").time()
+                last_dt = datetime.combine(now.date(), last_time)
+                # Check if less than 5 minutes (300 seconds) ago
+                if (now - last_dt.replace(tzinfo=ist_tz)).total_seconds() < 300:
+                    conn.close()
+                    return False
+            except Exception as parse_err:
+                print(f"Error parsing last unknown time: {parse_err}")
+    else:
+        # Check if attendance already logged for today
+        cursor.execute(
+            "SELECT id FROM attendance WHERE employee_id = ? AND date = ?",
+            (employee_id, current_date)
+        )
+        already_marked = cursor.fetchone()
+        
+        if already_marked:
+            conn.close()
+            return False
         
     try:
         cursor.execute(
