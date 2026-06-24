@@ -24,6 +24,9 @@ RUN pip install --no-cache-dir face-recognition --no-deps
 # Copy project files
 COPY . .
 
+# Download YOLOv8n weights during build so they are packaged inside the container image
+RUN python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
+
 # Expose port
 EXPOSE 5000
 
