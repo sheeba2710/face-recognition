@@ -47,6 +47,30 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    // Voice Output Cooldowns for Detected Faces
+    const spokenFaces = {};
+    const FACE_VOICE_COOLDOWN_MS = 10000; // 10 seconds cooldown for greeting a specific person
+
+    function speakFace(name, isAlreadyMarked) {
+        const now = Date.now();
+        if (!spokenFaces[name] || (now - spokenFaces[name] > FACE_VOICE_COOLDOWN_MS)) {
+            spokenFaces[name] = now;
+            
+            let phrase = '';
+            if (name === 'unknown person') {
+                phrase = 'Face not recognized';
+            } else {
+                phrase = isAlreadyMarked 
+                    ? `Hello ${name}, you are already marked present.` 
+                    : `Welcome ${name}. Attendance registered successfully.`;
+            }
+            
+            const utterance = new SpeechSynthesisUtterance(phrase);
+            utterance.rate = 0.95; // natural rate
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
     // 1. Initialize Webcam
     async function startCamera() {
         try {
@@ -188,6 +212,12 @@ document.addEventListener('DOMContentLoaded', () => {
                         
                         if (primaryMatch) {
                             hydrateEmployeePanel(primaryMatch);
+                        } else {
+                            // Check if there are unknown/unmatched faces
+                            const hasUnknown = data.matches.some(m => m.employee_id === 'UNKNOWN' || m.employee_id === null);
+                            if (hasUnknown) {
+                                speakFace('unknown person', false);
+                            }
                         }
                     }
 
@@ -260,9 +290,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const viewport = document.getElementById('recognizerViewport');
             viewport.classList.add('scan-match-flash');
             setTimeout(() => viewport.classList.remove('scan-match-flash'), 500);
+            
+            // Speak face matched greeting
+            speakFace(emp.name, false);
         } else {
             attendanceSuccessIndicator.classList.add('d-none');
             attendanceAlreadyIndicator.classList.remove('d-none');
+            
+            // Speak face already marked greeting
+            speakFace(emp.name, true);
         }
         
         // Set hold timeout to revert panel if face vanishes
