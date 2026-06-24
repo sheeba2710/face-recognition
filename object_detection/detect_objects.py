@@ -1,6 +1,10 @@
 import os
+import torch
 from ultralytics import YOLO
 import cv2
+
+# Set PyTorch thread limit to reduce memory allocation
+torch.set_num_threads(1)
 
 # Initialize YOLO model once using absolute path from project root
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -12,7 +16,8 @@ def detect_objects(frame):
     Detect objects in the frame using YOLOv8.
     Returns a list of detected objects with name, confidence (0-100%), and bounding box coordinates.
     """
-    results = model(frame, verbose=False)
+    with torch.inference_mode():
+        results = model(frame, verbose=False)
     objects = []
 
     for result in results:

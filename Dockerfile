@@ -32,4 +32,4 @@ RUN python -c "from ultralytics import YOLO; YOLO('yolov8n.pt')"
 EXPOSE 5000
 
 # Start with Gunicorn WSGI server, respecting PORT environment variable
-CMD ["sh", "-c", "gunicorn --workers 1 --threads 4 --timeout 120 --bind 0.0.0.0:${PORT:-5000} app:app"]
+CMD ["sh", "-c", "gunicorn --workers 1 --threads 1 --timeout 120 --bind 0.0.0.0:${PORT:-5000} app:app"]

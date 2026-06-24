@@ -1,6 +1,17 @@
 import os
+# Configure single-thread environment to stay within memory limits
+os.environ["OMP_NUM_THREADS"] = "1"
+os.environ["MKL_NUM_THREADS"] = "1"
+os.environ["OPENBLAS_NUM_THREADS"] = "1"
+os.environ["VECLIB_MAXIMUM_THREADS"] = "1"
+os.environ["NUMEXPR_NUM_THREADS"] = "1"
+
 import sys
+import gc
 # pyrefly: ignore [missing-import]
+import torch
+torch.set_num_threads(1)
+
 from flask import Flask, render_template, request, jsonify, redirect, url_for, Response, send_from_directory
 
 # Ensure project root is in python path
@@ -187,6 +198,8 @@ def api_detect_face_live():
         return jsonify({"success": True, "faces": faces_coords})
     except Exception as e:
         return jsonify({"success": False, "error": str(e)}), 500
+    finally:
+        gc.collect()
 
 @app.route('/api/recognize_frame', methods=['POST'])
 def api_recognize_frame():
@@ -240,6 +253,8 @@ def api_recognize_frame():
     except Exception as e:
         print(f"Error during frame recognition: {e}")
         return jsonify({"success": False, "error": "Frame recognition failed."}), 500
+    finally:
+        gc.collect()
 
 @app.route('/api/employee/update', methods=['POST'])
 def api_employee_update():
