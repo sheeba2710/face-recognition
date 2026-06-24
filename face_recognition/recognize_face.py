@@ -1,4 +1,3 @@
-from object_detection.detect_objects import detect_objects
 import os
 import sys
 import base64
