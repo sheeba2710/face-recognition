@@ -28,6 +28,25 @@ document.addEventListener('DOMContentLoaded', () => {
     let isRunning = false;
     let panelHoldTimeout = null; // keeps the details visible briefly after face leaves view
 
+    // Voice Output Cooldowns for Detected Objects
+    const spokenObjects = {}; // stores objectName -> timestamp of last voice announce
+    const VOICE_COOLDOWN_MS = 6000; // 6 seconds cooldown per object type
+
+    function speakObject(name) {
+        const now = Date.now();
+        if (!spokenObjects[name] || (now - spokenObjects[name] > VOICE_COOLDOWN_MS)) {
+            spokenObjects[name] = now;
+            
+            let spokenName = name;
+            // Map common YOLO names to cleaner spoken terms
+            if (name === 'cell phone') spokenName = 'phone';
+            
+            const utterance = new SpeechSynthesisUtterance(`This is a ${spokenName}`);
+            utterance.rate = 0.95; // natural rate
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
     // 1. Initialize Webcam
     async function startCamera() {
         try {
@@ -119,7 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const height = box.bottom - box.top;
                             
                             // Select colors based on match success
-                            const isMatched = match.employee_id !== null;
+                            const isMatched = match.employee_id !== null && match.employee_id !== 'UNKNOWN';
                             const boxColor = isMatched ? '#10b981' : '#f43f5e'; // Green vs Red/Rose
                             
                             // 1. Draw box rectangle
@@ -145,7 +164,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             // 4. Write text (Mirrored label layout handled by mirrored canvas CSS)
                             ctx.fillStyle = '#ffffff';
                             ctx.font = 'bold 13px sans-serif';
-                            const labelText = isMatched ? `This is ${match.name}` : 'Unknown Profile';
+                            const labelText = isMatched ? `This is ${match.name}` : 'unknown person';
                             const confText = `Confidence: ${match.confidence}%`;
                             
                             // Canvas is mirrored, so text drawing requires mirroring matrix tricks or we can use normal alignment
@@ -175,6 +194,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Draw Objects
                     if (data.objects && data.objects.length > 0) {
                         data.objects.forEach(obj => {
+                            // Announce the object name via Web Speech Synthesis (with cooldown)
+                            speakObject(obj.name);
+
                             const box = obj.box;
                             const width = box.right - box.left;
                             const height = box.bottom - box.top;

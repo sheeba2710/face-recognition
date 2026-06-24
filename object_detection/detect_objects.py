@@ -1,15 +1,18 @@
+import os
 from ultralytics import YOLO
 import cv2
 
-# Initialize YOLO model once
-model = YOLO("yolov8n.pt")
+# Initialize YOLO model once using absolute path from project root
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+model_path = os.path.join(project_root, "yolov8n.pt")
+model = YOLO(model_path)
 
 def detect_objects(frame):
     """
     Detect objects in the frame using YOLOv8.
     Returns a list of detected objects with name, confidence (0-100%), and bounding box coordinates.
     """
-    results = model(frame)
+    results = model(frame, verbose=False)
     objects = []
 
     for result in results:

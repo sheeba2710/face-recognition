@@ -209,23 +209,24 @@ def api_recognize_frame():
             confidence = match["confidence"]
             box = match["box"]
             
-            emp_info = None
+            # If not registered person scans, mark as UNKNOWN
+            if not employee_id:
+                employee_id = "UNKNOWN"
+            
+            emp_info = get_employee(employee_id)
             attendance_marked = False
             
-            # Match is successful if employee_id is resolved (tolerance checks passed in recognition module)
-            if employee_id:
-                emp_info = get_employee(employee_id)
-                if emp_info:
-                    # Clean up file path format if needed for absolute references
-                    emp_info["image_url"] = "/" + emp_info["image_path"]
-                    
-                    # Mark attendance (auto-logs status 'Present' if not already logged today)
-                    attendance_marked = mark_attendance(employee_id)
+            if emp_info:
+                # Clean up file path format if needed for absolute references
+                emp_info["image_url"] = "/" + emp_info["image_path"]
+                
+                # Mark attendance (auto-logs status 'Present' if not already logged today; handles cooldown for UNKNOWN)
+                attendance_marked = mark_attendance(employee_id)
                     
             hydrated_matches.append({
                 "box": box,
                 "employee_id": employee_id,
-                "name": emp_info["name"] if emp_info else "Unknown",
+                "name": emp_info["name"] if emp_info else "unknown person",
                 "confidence": confidence,
                 "employee_info": emp_info,
                 "attendance_marked": attendance_marked
